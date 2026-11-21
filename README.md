@@ -57,7 +57,8 @@ A mobile-first Thai questionnaire that turns getting to know someone into a rela
 
 ## Privacy and database security
 
-- Visitors use the Supabase `anon` role and can only INSERT into `public.questionnaire_responses`.
+- Visitors normally use the Supabase `anon` role and can only INSERT into `public.questionnaire_responses`.
+- The `authenticated` role also has INSERT access so the form still works when the browser has an existing Supabase login session (for example, after the owner used the Admin page).
 - Anonymous clients have no SELECT, UPDATE, or DELETE privileges or RLS policies.
 - Authenticated users have table-level SELECT privilege, but RLS allows rows only when `auth.uid()` is registered in `private.app_admins`.
 - The owner allowlist is in the non-exposed `private` schema and browser roles cannot read it directly.
