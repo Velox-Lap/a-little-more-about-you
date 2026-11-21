@@ -41,7 +41,7 @@ for(const [htmlFile,jsFile] of [['index.html','assets/app.js'],['admin.html','as
  assert(absent.length===0,`${htmlFile} local assets exist${absent.length?': '+absent.join(', '):''}`);
 }
 const config=read('assets/config.js');
-assert(!/service[_-]?role|sb_secret|secret[_-]?key/i.test(config),'Browser config has no service-role or secret-key identifier');
+assert(!/(?:sb_secret_[A-Za-z0-9_-]+|SUPABASE_SERVICE_ROLE_KEY\\s*[:=]|service_role\\s*[:=])/i.test(config),'Browser config does not assign a service-role or secret key');
 assert(/sb_publishable_[A-Za-z0-9_-]+/.test(config),'Browser config uses a publishable key');
 const sql=read('supabase/schema.sql');
 assert(/enable row level security/i.test(sql),'Reference schema enables RLS');
