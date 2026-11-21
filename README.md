@@ -1,64 +1,87 @@
 # A Little More About You
 
-A mobile-first Thai questionnaire with a separate owner dashboard. GitHub Pages serves the static site; Supabase stores responses and enforces owner-only reads.
+A mobile-first Thai questionnaire with a separate owner dashboard. GitHub Pages serves the static website; Supabase stores responses and enforces owner-only reads.
 
-## Project status
+## Live project configuration
 
 - Supabase project: `A-Little-More-About-You`
 - Project ref: `dcpbqbrpwazyleywuiat`
 - Region: `ap-southeast-1` (Singapore)
 - Project URL and publishable key are configured in `assets/config.js`.
-- Database migrations are applied: private response table, anonymous INSERT-only access, authenticated owner-only SELECT, and owner verification RPC.
-- Owner account has been added to `private.app_admins`; the owner RPC test returned `true`.
-- The publishable key and project URL are already configured in `assets/config.js`.
-- The website source is ready to push to a GitHub repository. The repository itself has not yet been created.
+- The database migrations are already applied.
+- The owner account has already been added to `private.app_admins` and owner verification has been tested successfully.
 
-## What's included
+## Project structure
+
+```text
+.
+├── index.html
+├── admin.html
+├── README.md
+├── .nojekyll
+├── assets/
+│   ├── admin.js
+│   ├── app.js
+│   ├── config.js
+│   ├── questions.js
+│   └── styles.css
+└── supabase/
+    ├── bootstrap-owner.sql
+    └── schema.sql
+```
+
+## Pages
 
 - `index.html`: 80-question experience, one question at a time, back/skip, review, and submit.
 - `admin.html`: owner sign-in and private response dashboard.
-- `assets/`: design, questions, app logic, admin logic, and browser-safe Supabase configuration.
-- `supabase/schema.sql`: full database setup matching the live migrations.
-- `supabase/bootstrap-owner.sql`: add your Auth account to the private owner allowlist after creating it.
+- `assets/`: responsive styling, question bank, questionnaire logic, admin logic, and browser-safe Supabase configuration.
+- `supabase/schema.sql`: database schema and policies matching the live project.
+- `supabase/bootstrap-owner.sql`: optional SQL for intentionally adding or re-adding an owner. The current owner is already configured; do not run this unless necessary.
 
-## Privacy model
+## Privacy and security model
 
-- Visitors use the `anon` role and can only INSERT into `public.questionnaire_responses`.
-- Anonymous clients have no SELECT, UPDATE, or DELETE table grants or policies.
-- Authenticated users receive SELECT privilege, but the RLS policy returns rows only when `auth.uid()` exists in `private.app_admins`.
-- The admin allowlist is in a non-exposed `private` schema; browser roles cannot read it.
-- `public.is_questionnaire_owner()` only returns a boolean and is used by the dashboard to verify that the signed-in account is an approved owner.
-- The browser config contains only the publishable key. Never put a service-role or secret key in this repository.
+- Public visitors use the `anon` role and can only INSERT into `public.questionnaire_responses`.
+- Anonymous clients have no SELECT, UPDATE, or DELETE grants or policies.
+- Authenticated users have SELECT privilege, but RLS returns rows only when their `auth.uid()` is present in `private.app_admins`.
+- The owner allowlist is stored in the non-exposed `private` schema and cannot be read directly by browser roles.
+- `public.is_questionnaire_owner()` returns only a boolean and is used by the dashboard for owner verification.
+- The frontend contains only the Supabase publishable key. Never add a service-role key or secret key to this repository.
 
-## Owner setup status
+The repository is public. This is acceptable for the current configuration because the source contains no database secret; response confidentiality is enforced by Supabase grants and RLS, not by hiding the HTML or JavaScript.
 
-The owner account has already been created in Supabase Auth and added to `private.app_admins`. Its owner-verification RPC returned `true` in a database-role test. **Do not run `supabase/bootstrap-owner.sql` again unless you are intentionally adding or re-adding an owner.**
+## Owner access
 
-Before sharing the public questionnaire:
+The owner account has already been created in Supabase Auth and added to `private.app_admins`.
 
-1. Open `admin.html` after deploying and sign in with the same email/password created in Supabase Auth.
-2. In Supabase **Authentication → Settings / Sign In / Providers**, turn off public sign-ups. Respondents do not need Supabase accounts.
-3. Do not add any other user to `private.app_admins`; only users in that table can read responses.
-
-## Test before sharing
-
-1. Open `index.html` in a browser over a local static server or after publishing to GitHub Pages.
-2. Submit a test response with a nickname and a few answers.
-3. Sign in at `admin.html` with the owner account and confirm the test response appears.
-4. Sign out and verify the admin dashboard cannot load response data.
-5. In a separate private browser session, try to read `questionnaire_responses` through the Supabase client; the `anon` role must be denied.
+1. Sign in at the deployed `/admin.html` page using the existing owner email and password.
+2. In Supabase **Authentication → Settings / Sign In**, disable public user sign-ups. Respondents do not need Supabase accounts; anonymous submissions continue to work.
+3. Do not add other users to `private.app_admins`; only approved IDs can read the responses.
 
 ## Publish with GitHub Pages
 
-1. Create a new repository in the GitHub account.
-2. Upload the contents of this project to the repository root (`index.html`, `admin.html`, `assets/`, `supabase/`, and `.nojekyll`).
-3. In **Settings → Pages**, select **Deploy from a branch**, choose `main`, and select `/ (root)`.
-4. Wait for the Pages deployment to finish. Share the generated public site URL, not the admin URL.
+The source files are committed to the `main` branch at the repository root.
 
-If GitHub Pages is not available for the repository visibility/plan you choose, use a public repository or another static hosting provider. The privacy of answers does not depend on the repository being private: answer privacy is enforced by Supabase RLS.
+1. Open this repository's **Settings → Pages**.
+2. Under **Build and deployment**, select **Deploy from a branch**.
+3. Choose branch `main` and folder `/ (root)`, then save.
+4. Wait for the Pages deployment. The expected public URL is:
 
-## Notes
+   `https://velox-lap.github.io/a-little-more-about-you/`
 
-- The questionnaire contains optional free-text prompts. Respondents can skip anything and submit only what they are comfortable sharing.
-- The public submit endpoint can receive spam. For broader public use, add a server-side rate limit or CAPTCHA; do not rely on frontend-only restrictions.
+5. The public questionnaire is the URL above. The owner dashboard is `https://velox-lap.github.io/a-little-more-about-you/admin.html`.
+
+The GitHub Pages setting must be enabled in repository settings; the connected GitHub tools in this session can commit files but cannot enable the Pages setting through the Pages API.
+
+## Test before sharing
+
+1. Open the public questionnaire and submit a small test response.
+2. Open `/admin.html` and sign in with the existing owner account.
+3. Confirm the test response is visible in the dashboard.
+4. Sign out and verify that the dashboard requires authentication.
+5. Confirm that no test response remains if you delete the test from the database as an owner using the Supabase Dashboard.
+
+## Operational notes
+
+- Questions are optional; respondents may skip questions and should share only what they are comfortable sharing.
+- Public submit endpoints can receive spam. For wider public use, add server-side rate limiting or CAPTCHA; do not rely on frontend-only controls.
 - Never commit answer exports, passwords, access tokens, or service-role keys.
