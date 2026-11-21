@@ -1,15 +1,15 @@
 # A Little More About You
 
-A mobile-first Thai questionnaire with a separate owner dashboard. GitHub Pages serves the static website; Supabase stores responses and enforces owner-only reads.
+A mobile-first Thai questionnaire that turns getting to know someone into a relaxed conversation. The respondent chooses which prompts to answer, can add optional follow-up answers, and reviews everything before submitting.
 
-## Live project configuration
+## Live project
 
+- GitHub repository: https://github.com/Velox-Lap/a-little-more-about-you
+- Public questionnaire: https://velox-lap.github.io/a-little-more-about-you/
+- Owner dashboard: https://velox-lap.github.io/a-little-more-about-you/admin.html
 - Supabase project: `A-Little-More-About-You`
 - Project ref: `dcpbqbrpwazyleywuiat`
 - Region: `ap-southeast-1` (Singapore)
-- Project URL and publishable key are configured in `assets/config.js`.
-- The database migrations are already applied.
-- The owner account has already been added to `private.app_admins` and owner verification has been tested successfully.
 
 ## Project structure
 
@@ -23,65 +23,76 @@ A mobile-first Thai questionnaire with a separate owner dashboard. GitHub Pages 
 │   ├── admin.js
 │   ├── app.js
 │   ├── config.js
+│   ├── conversation.js
 │   ├── questions.js
-│   └── styles.css
+│   ├── styles.css
+│   └── theme.css
 └── supabase/
     ├── bootstrap-owner.sql
     └── schema.sql
 ```
 
-## Pages
+## Respondent experience
 
-- `index.html`: 80-question experience, one question at a time, back/skip, review, and submit.
-- `admin.html`: owner sign-in and private response dashboard.
-- `assets/`: responsive styling, question bank, questionnaire logic, admin logic, and browser-safe Supabase configuration.
-- `supabase/schema.sql`: database schema and policies matching the live project.
-- `supabase/bootstrap-owner.sql`: optional SQL for intentionally adding or re-adding an owner. The current owner is already configured; do not run this unless necessary.
+- 15 selected main prompts across three optional levels: Ice Breaking, Understanding, and Deep Connection.
+- Questions can be answered in any order; unanswered prompts can be skipped.
+- Each main answer may reveal related follow-up prompts. Follow-ups are optional.
+- Respondents can review their answers before submitting.
+- The experience is designed for mobile and desktop.
 
-## Privacy and security model
+## Owner dashboard
 
-- Public visitors use the `anon` role and can only INSERT into `public.questionnaire_responses`.
-- Anonymous clients have no SELECT, UPDATE, or DELETE grants or policies.
-- Authenticated users have SELECT privilege, but RLS returns rows only when their `auth.uid()` is present in `private.app_admins`.
-- The owner allowlist is stored in the non-exposed `private` schema and cannot be read directly by browser roles.
-- `public.is_questionnaire_owner()` returns only a boolean and is used by the dashboard for owner verification.
-- The frontend contains only the Supabase publishable key. Never add a service-role key or secret key to this repository.
+- Sign in at `admin.html` using the owner account created in Supabase Auth.
+- The dashboard verifies ownership with `public.is_questionnaire_owner()` before loading responses.
+- Responses include the nickname, main answers, follow-up answers, and submission time.
+- Only approved owner UUIDs in `private.app_admins` can read response rows.
 
-The repository is public. This is acceptable for the current configuration because the source contains no database secret; response confidentiality is enforced by Supabase grants and RLS, not by hiding the HTML or JavaScript.
+## Current deployment and configuration
 
-## Owner access
+- GitHub Pages publishes from `main` at the repository root.
+- The public URL is `https://velox-lap.github.io/a-little-more-about-you/`.
+- `assets/config.js` contains the verified Supabase URL and publishable key for project `dcpbqbrpwazyleywuiat`.
+- **Keep the current live `assets/config.js` when syncing project files.** An older copy in a supplied ZIP may contain a key for a different Supabase project and cause `Invalid API key`.
+- The key in `assets/config.js` is a publishable key intended for browser use. Never expose a `service_role` key or a secret key in this repository.
 
-The owner account has already been created in Supabase Auth and added to `private.app_admins`.
+## Privacy and database security
 
-1. Sign in at the deployed `/admin.html` page using the existing owner email and password.
-2. In Supabase **Authentication → Settings / Sign In**, disable public user sign-ups. Respondents do not need Supabase accounts; anonymous submissions continue to work.
-3. Do not add other users to `private.app_admins`; only approved IDs can read the responses.
+- Visitors use the Supabase `anon` role and can only INSERT into `public.questionnaire_responses`.
+- Anonymous clients have no SELECT, UPDATE, or DELETE privileges or RLS policies.
+- Authenticated users have table-level SELECT privilege, but RLS allows rows only when `auth.uid()` is registered in `private.app_admins`.
+- The owner allowlist is in the non-exposed `private` schema and browser roles cannot read it directly.
+- `public.is_questionnaire_owner()` returns only a boolean for the admin UI.
+- The live owner account has already been added to `private.app_admins`; do not run `supabase/bootstrap-owner.sql` again unless intentionally adding another approved owner.
 
-## Publish with GitHub Pages
+## Supabase setup notes
 
-The source files are committed to the `main` branch at the repository root.
+The live database migrations have already been applied. `supabase/schema.sql` is a reference schema file for reproducing the database in a separate project. Do not run it against the live project just to deploy the frontend.
 
-1. Open this repository's **Settings → Pages**.
-2. Under **Build and deployment**, select **Deploy from a branch**.
-3. Choose branch `main` and folder `/ (root)`, then save.
-4. Wait for the Pages deployment. The expected public URL is:
+Public respondents do not need Supabase accounts. Disable public sign-ups in Supabase Authentication settings after the owner account exists. Keep the owner email/password private, and do not add other users to `private.app_admins`.
 
-   `https://velox-lap.github.io/a-little-more-about-you/`
+## Test checklist
 
-5. The public questionnaire is the URL above. The owner dashboard is `https://velox-lap.github.io/a-little-more-about-you/admin.html`.
+1. Open the public questionnaire and check that the service status reports the private submission service is ready.
+2. Enter a nickname, choose a few prompts across all three levels, and try at least one follow-up.
+3. Review the answers and submit a test response.
+4. Open the owner dashboard and sign in using the approved owner account.
+5. Confirm that the main answers and follow-up answers appear in the same submission.
+6. Sign out. A non-owner account must not be able to read any responses.
 
-The GitHub Pages setting must be enabled in repository settings; the connected GitHub tools in this session can commit files but cannot enable the Pages setting through the Pages API.
+The database access model has been tested directly: anonymous INSERT succeeds, anonymous SELECT/UPDATE/DELETE are denied, and an unapproved authenticated user sees zero response rows. A final end-to-end browser submission should still be performed after deployment.
 
-## Test before sharing
+## References for interaction and visual direction
 
-1. Open the public questionnaire and submit a small test response.
-2. Open `/admin.html` and sign in with the existing owner account.
-3. Confirm the test response is visible in the dashboard.
-4. Sign out and verify that the dashboard requires authentication.
-5. Confirm that no test response remains if you delete the test from the database as an owner using the Supabase Dashboard.
+- Figma Riff “Card shuffle” for a layered card transition.
+- Figma Riff “Dynamic counter” for an animated answer count.
+- Questionnaire onboarding and progress-bar prototypes for one-question-at-a-time hierarchy and navigation.
+- Friendzy / Cupid Arrow UI references for a soft, friendly visual treatment.
+- Siriraj questionnaire-site reference for Thai-language questionnaire context.
+
+These references informed interaction and visual direction; their source assets are not bundled into this repository.
 
 ## Operational notes
 
-- Questions are optional; respondents may skip questions and should share only what they are comfortable sharing.
-- Public submit endpoints can receive spam. For wider public use, add server-side rate limiting or CAPTCHA; do not rely on frontend-only controls.
+- All responses are optional. Respondents should share only what they are comfortable sharing.
+- Public insert endpoints can receive spam. For wider public use, add server-side rate limiting or CAPTCHA; do not rely on frontend-only restrictions.
 - Never commit answer exports, passwords, access tokens, or service-role keys.
