@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#f7f2f3" />
+  <title>Owner Dashboard · A Little More About You</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.2"></script><script src="assets/config.js"></script><script src="assets/questions.js"></script><script defer src="assets/admin.js"></script>
+</head>
+<body>
+  <main class="shell admin-shell">
+    <header class="topbar"><a class="wordmark" href="index.html"><span class="brand-mark">a.</span><span>little things</span></a><span class="top-note">OWNER AREA</span></header>
+    <section id="login-view" class="panel login-panel">
+      <div class="eyebrow"><span class="eyebrow-dot"></span> PRIVATE ACCESS</div>
+      <h1>Owner<br><em>dashboard.</em></h1>
+      <p class="intro">ลงชื่อเข้าใช้ด้วยบัญชีผู้ดูแลที่ตั้งค่าไว้ เพื่อดูคำตอบทั้งหมด</p>
+      <form id="login-form" class="login-form">
+        <label class="field-label" for="email">อีเมลผู้ดูแล</label><input id="email" class="text-input" type="email" required autocomplete="username" placeholder="owner@example.com" />
+        <label class="field-label" for="password">รหัสผ่าน</label><input id="password" class="text-input" type="password" required autocomplete="current-password" placeholder="รหัสผ่าน" />
+        <button class="primary-btn" type="submit">เข้าสู่ระบบ <span>→</span></button>
+      </form>
+      <p id="login-message" class="form-message" role="status"></p>
+      <p class="privacy-note">การป้องกันข้อมูลจริงอยู่ที่ Row Level Security (RLS) ของฐานข้อมูล ไม่ได้พึ่งเพียงการซ่อนหน้าเว็บ</p>
+    </section>
+
+    <section id="dashboard-view" class="hidden">
+      <div class="dashboard-heading"><div><div class="eyebrow"><span class="eyebrow-dot"></span> PRIVATE RESPONSES</div><h1>คำตอบ<span class="soft-em">ทั้งหมด</span></h1><p class="intro">ข้อมูลนี้แสดงได้เฉพาะบัญชีผู้ดูแลที่ได้รับอนุญาตจากฐานข้อมูล</p></div><button id="logout-btn" class="secondary-btn">ออกจากระบบ</button></div>
+      <div class="stats-grid"><div class="stat-card"><span>SUBMISSIONS</span><strong id="submission-total">0</strong></div><div class="stat-card"><span>LAST RECEIVED</span><strong id="last-received">—</strong></div></div>
+      <div class="responses-toolbar"><h2>รายการคำตอบ</h2><button id="refresh-btn" class="text-btn">รีเฟรช ↻</button></div>
+      <div id="responses-list" class="responses-list"><div class="empty-state">กำลังโหลดข้อมูล…</div></div>
+      <p id="dashboard-message" class="form-message" role="status"></p>
+    </section>
+    <footer class="site-footer"><span>private owner area</span><a href="index.html">กลับหน้าแบบสอบถาม</a></footer>
+  </main>
+</body>
+</html>
