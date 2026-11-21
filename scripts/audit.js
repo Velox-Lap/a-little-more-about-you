@@ -45,6 +45,7 @@ assert(!/(?:sb_secret_[A-Za-z0-9_-]+|SUPABASE_SERVICE_ROLE_KEY\\s*[:=]|service_r
 assert(/sb_publishable_[A-Za-z0-9_-]+/.test(config),'Browser config uses a publishable key');
 const sql=read('supabase/schema.sql');
 assert(/enable row level security/i.test(sql),'Reference schema enables RLS');
+assert(/questionnaire_responses_answers_size[\\s\\S]*char_length\\(answers::text\\) <= 50000/i.test(sql),'Database limits submitted answer payload size');
 assert(/grant insert on public\.questionnaire_responses to anon, authenticated/i.test(sql),'Both anon and authenticated roles can submit');
 assert(/for insert\s+to anon, authenticated/i.test(sql),'Insert policy covers anon and authenticated roles');
 assert(/for select\s+to authenticated[\s\S]*private\.is_app_admin\(\)/i.test(sql),'Read policy is owner-gated');
