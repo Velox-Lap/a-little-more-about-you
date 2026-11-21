@@ -48,7 +48,9 @@ create table if not exists public.questionnaire_responses (
   constraint questionnaire_responses_name_length
     check (char_length(respondent_name) <= 80),
   constraint questionnaire_responses_answers_object
-    check (jsonb_typeof(answers) = 'object')
+    check (jsonb_typeof(answers) = 'object'),
+  constraint questionnaire_responses_answers_size
+    check (char_length(answers::text) <= 50000)
 );
 
 alter table public.questionnaire_responses enable row level security;
